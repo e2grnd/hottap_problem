@@ -1,0 +1,50 @@
+\usepackage[utf8]{inputenc}
+\usepackage[pctex32]{graphics}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[left=3cm,top=2cm,right=3cm,nohead]{geometry}
+\usepackage{latexsym}
+\usepackage[outdir=./]{epsfig}
+\usepackage{pstcol}
+\usepackage{framed}
+\usepackage{tcolorbox}
+\usepackage[shortlabels]{enumitem}
+\usepackage{graphicx}
+\usepackage{lscape}
+\usepackage{rotating}
+\usepackage{fancyvrb}
+
+\newenvironment{quotationb}
+{
+	\begin{leftbar}
+	\begin{quotation}
+	\noindent
+}
+{
+	\end{quotation}
+	\end{leftbar}
+}
+\parindent0pt
+\parskip6pt
+\pagestyle{empty}
+\newcommand{\R}{{\mathbb R}}
+\newcommand{\N}{{\mathbb N}}
+\newcommand{\gauss}{\mathcal{N}}
+\newcommand{\cov}{\textrm{C}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\kldiv}[2]{d_{KL}\left( #1 \,|\, #2 \right)}
+\newcommand{\kldist}[2]{\delta_{KL}\left( #1 \,|\, #2 \right)}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\intrn}{\int_{\R^n} }
+\newcommand{\intomega}{\int_{\Omega} }
+\newcommand{\intbomega}{\int_{\partial\Omega} }
+\newcommand{\fin}{\newpage
+\begin{figure}[p]
+\centerline{
+\includegraphics[width=6cm]{img/example_image.png}
+}
+\begin{center}\Huge\bfseries\itshape
+We did it!
+\end{center}
+\end{figure}
+}
