@@ -1,6 +1,6 @@
 from fenics import *
 from mshr import *
-from dolfin import Mesh
+from dolfin import Mesh, Measure
 import numpy as np
 import matplotlib.pyplot as plt
 from utils import construct_sleeve_geometry, is_in_weld_region, UniformHeatSource
@@ -22,8 +22,9 @@ L_wall = 2 * L_sleeve
 temp_ambient = 70.0
 temp_process = 325.0
 h_ambient = 9.0 * (1.0 / 3600.0) * (1.0 / 144.0)
+h_process = 48.0 * (1.0 / 3600.0) * (1.0 / 144.0)
+u_0 = (h_ambient * temp_ambient + h_process * temp_process) / (h_ambient + h_process)
 h_ambient = Constant(h_ambient)
-h_process = 48.0 * (1.0 / 3600.0) * (1.0 / 144.0) 
 h_process = Constant(h_process)
 rho = Constant(0.284)
 c_P = Constant(0.119)
@@ -31,7 +32,7 @@ k = 31.95 * (1.0 / 3600.0) * (1.0 / 12.0)
 k = Constant(k)
 # 
 # Create sleeve geometry
-mesh = construct_sleeve_geometry(
+(mesh, boundaries) = construct_sleeve_geometry(
     t_wall=t_wall,
     t_gap=t_gap,
     t_sleeve=t_sleeve,
@@ -44,7 +45,7 @@ mesh = construct_sleeve_geometry(
 V = FunctionSpace(mesh, 'P', 1)
 #
 # Define initial conditions
-u_0 = Constant(temp_process) 
+u_0 = Constant(u_0) 
 u_n = interpolate(u_0, V)
 #
 # Define forcing function
@@ -68,7 +69,8 @@ plt.savefig('mesh.png')
 # Define variational problem
 u = TrialFunction(V)
 v = TestFunction(V)
-F = rho*c_P*u*v*dx + dt*k*dot(grad(u), grad(v))*dx - (rho*c_P*u_n + dt*f)*v*dx - dt*h_ambient(u - temp_ambient)*v*ds
+ds = Measure("ds")[boundaries]
+F = rho*c_P*u*v*dx + dt*k*dot(grad(u), grad(v))*dx - (rho*c_P*u_n + dt*f)*v*dx - dt*h_ambient*(u - temp_ambient)*v*ds(1) - dt*h_process*(u - temp_process)*v*ds(2)
 a, L = lhs(F), rhs(F)
 #
 # Time-stepping

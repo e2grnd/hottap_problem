@@ -1,5 +1,5 @@
 from mshr import *
-from dolfin import Mesh, Expression, DOLFIN_EPS, CellFunction, SubDomain, refine
+from dolfin import Mesh, Expression, DOLFIN_EPS, CellFunction, SubDomain, refine, near, FacetFunction
 
 def construct_sleeve_geometry(
     t_wall = None,
@@ -57,7 +57,42 @@ def construct_sleeve_geometry(
     my_domain.mark(cell_markers, True)
     mesh = refine(mesh, cell_markers)
     #
-    return mesh
+    # Define the upper and lower boundaries
+    class Upper(SubDomain):
+        def inside(self, x, on_boundary):
+            #
+            # Define relevant points
+            xb1 = (L_wall - L_sleeve -  t_sleeve - t_gap)
+            xb2 = (L_wall - L_sleeve)
+            yb1 = t_wall
+            yb2 = (t_wall + t_sleeve + t_gap)
+            #
+            # Define params for assessing if on a line between points
+            dx_line = xb2 - xb1 
+            dy_line = yb2 - yb1
+            dx = x[0] - xb1
+            dy = x[1] - yb1
+            zero = dx * dy_line - dx_line * dy
+            #
+            is_upper_region_one = x[0] <= xb1 and near(x[1], yb1)
+            is_upper_region_two = x[0] >= xb1 and x[0] <= xb2 and near(zero, 0)
+            is_upper_region_three = x[0] >= xb2 and near(x[1], yb2)
+            #
+            return is_upper_region_one or is_upper_region_two or is_upper_region_three
+    
+    class Lower(SubDomain):
+        def inside(self, x, on_boundary):
+            return near(x[1], 0)
+    #
+    # Set boundaries
+    upper = Upper()
+    lower = Lower()
+    boundaries = FacetFunction("size_t", mesh)
+    boundaries.set_all(0)
+    upper.mark(boundaries, 1)
+    lower.mark(boundaries, 2)
+    #
+    return (mesh, boundaries)
 
 class is_in_weld_region(object):
     def __init__(self, t_wall, t_sleeve, t_gap, L_wall, L_sleeve):
